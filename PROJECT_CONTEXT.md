@@ -24,9 +24,9 @@ Generation (RAG) and the GitHub API to:
 
 ## 3. Current Status (update every session)
 - [x] Project skeleton created (client + server folders)
-- [ ] Backend Express server running
-- [ ] Frontend React app running
-- [ ] GitHub API connected (fetch repo info)
+- [x] Backend Express server running
+- [x] Frontend React app running
+- [x] GitHub API connected (fetch repo info)
 - [ ] README/NLP analysis module (via LLM API)
 - [ ] RAG / retrieval module
 - [ ] Beginner-issue recommendation logic
