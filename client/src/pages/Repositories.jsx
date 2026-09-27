@@ -9,6 +9,9 @@ function Repositories() {
   const [readme, setReadme] = useState(null);
   const [issues, setIssues] = useState([]);
 
+  const [analysis, setAnalysis] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -21,10 +24,10 @@ function Repositories() {
     try {
       setLoading(true);
       setError("");
-
       setRepository(null);
       setReadme(null);
       setIssues([]);
+      setAnalysis("");
 
       const repositoryResponse = await axios.get(
         `http://localhost:5000/api/github/repository/${owner}/${repo}`
@@ -51,6 +54,33 @@ function Repositories() {
     }
   };
 
+  const analyzeReadme = async () => {
+    if (!readme || !readme.content) {
+      setError("README content is not available.");
+      return;
+    }
+
+    try {
+      setAnalyzing(true);
+      setError("");
+      setAnalysis("");
+
+      const response = await axios.post(
+        "http://localhost:5000/api/ai/analyze-readme",
+        {
+          readme: readme.content,
+        }
+      );
+
+      setAnalysis(response.data.analysis);
+    } catch (error) {
+      console.error(error);
+      setError("Failed to analyze README with AI.");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white p-8">
       <div className="max-w-5xl mx-auto">
@@ -60,10 +90,10 @@ function Repositories() {
         </h1>
 
         <p className="text-slate-400 mb-8">
-          Enter a GitHub repository to explore its information, README and issues.
+          Explore a GitHub repository and understand it with AI.
         </p>
 
-        {/* Search section */}
+        {/* Search */}
         <div className="flex gap-3 mb-8">
 
           <input
@@ -84,19 +114,13 @@ function Repositories() {
 
           <button
             onClick={fetchRepository}
-            className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700"
+            disabled={loading}
+            className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
           >
-            Search
+            {loading ? "Searching..." : "Search"}
           </button>
 
         </div>
-
-        {/* Loading */}
-        {loading && (
-          <p className="text-slate-400">
-            Fetching repository data...
-          </p>
-        )}
 
         {/* Error */}
         {error && (
@@ -105,7 +129,7 @@ function Repositories() {
           </p>
         )}
 
-        {/* Repository information */}
+        {/* Repository Information */}
         {repository && (
           <div className="space-y-8">
 
@@ -159,13 +183,42 @@ function Repositories() {
             {readme && (
               <div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
 
-                <h2 className="text-2xl font-bold mb-4">
-                  README
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+
+                  <h2 className="text-2xl font-bold">
+                    README
+                  </h2>
+
+                  <button
+                    onClick={analyzeReadme}
+                    disabled={analyzing}
+                    className="px-5 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {analyzing
+                      ? "Analyzing..."
+                      : "✨ Analyze README with AI"}
+                  </button>
+
+                </div>
 
                 <pre className="whitespace-pre-wrap text-sm text-slate-300 overflow-auto max-h-[500px]">
                   {readme.content}
                 </pre>
+
+              </div>
+            )}
+
+            {/* AI Analysis */}
+            {analysis && (
+              <div className="p-6 rounded-xl bg-slate-900 border border-purple-700">
+
+                <h2 className="text-2xl font-bold mb-6">
+                  ✨ AI README Analysis
+                </h2>
+
+                <div className="whitespace-pre-wrap text-slate-300 leading-7">
+                  {analysis}
+                </div>
 
               </div>
             )}
