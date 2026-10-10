@@ -27,7 +27,7 @@ Generation (RAG) and the GitHub API to:
 - [x] Backend Express server running
 - [x] Frontend React app running
 - [x] GitHub API connected (fetch repo info)
-- [ ] README/NLP analysis module (via LLM API)
+- [x] README/NLP analysis module (via LLM API)
 - [ ] RAG / retrieval module
 - [ ] Beginner-issue recommendation logic
 - [ ] Chatbot UI
