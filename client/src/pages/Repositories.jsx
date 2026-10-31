@@ -1,5 +1,7 @@
+
 import { useState } from "react";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
 
 function Repositories() {
   const [owner, setOwner] = useState("");
@@ -12,11 +14,26 @@ function Repositories() {
   const [analysis, setAnalysis] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
 
+  // RAG Chatbot states
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [asking, setAsking] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Clean escaped Markdown characters from AI responses
+  const formatMarkdown = (content) => {
+    if (!content) return "";
+
+    return content
+      .replace(/\\([\\`*_{}\[\]()#+.!>~-])/g, "$1")
+      .replace(/\r\n/g, "\n");
+  };
+
+  // Fetch GitHub repository information
   const fetchRepository = async () => {
-    if (!owner || !repo) {
+    if (!owner.trim() || !repo.trim()) {
       setError("Please enter both owner and repository name.");
       return;
     }
@@ -28,17 +45,19 @@ function Repositories() {
       setReadme(null);
       setIssues([]);
       setAnalysis("");
+      setQuestion("");
+      setAnswer("");
 
       const repositoryResponse = await axios.get(
-        `http://localhost:5000/api/github/repository/${owner}/${repo}`
+        `http://localhost:5000/api/github/repository/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}`
       );
 
       const readmeResponse = await axios.get(
-        `http://localhost:5000/api/github/repository/${owner}/${repo}/readme`
+        `http://localhost:5000/api/github/repository/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/readme`
       );
 
       const issuesResponse = await axios.get(
-        `http://localhost:5000/api/github/repository/${owner}/${repo}/issues`
+        `http://localhost:5000/api/github/repository/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/issues`
       );
 
       setRepository(repositoryResponse.data.repository);
@@ -54,6 +73,7 @@ function Repositories() {
     }
   };
 
+  // Analyze README using Gemini
   const analyzeReadme = async () => {
     if (!readme || !readme.content) {
       setError("README content is not available.");
@@ -79,6 +99,123 @@ function Repositories() {
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  // Ask repository questions using RAG and Gemini
+  const askRepositoryQuestion = async () => {
+    if (!readme || !readme.content) {
+      setError("README content is not available.");
+      return;
+    }
+
+    if (!question.trim()) {
+      setError("Please enter a question.");
+      return;
+    }
+
+    try {
+      setAsking(true);
+      setError("");
+      setAnswer("");
+
+      const response = await axios.post(
+        "http://localhost:5000/api/questions/ask",
+        {
+          readme: readme.content,
+          question: question.trim(),
+        }
+      );
+
+      setAnswer(response.data.answer);
+    } catch (error) {
+      console.error(error);
+      setError("Failed to get an answer. Please try again.");
+    } finally {
+      setAsking(false);
+    }
+  };
+
+  // Markdown components used to display AI answers
+  const markdownComponents = {
+    h1: ({ children }) => (
+      <h1 className="text-2xl font-bold mt-5 mb-3">{children}</h1>
+    ),
+
+    h2: ({ children }) => (
+      <h2 className="text-xl font-bold mt-5 mb-3">{children}</h2>
+    ),
+
+    h3: ({ children }) => (
+      <h3 className="text-lg font-bold mt-4 mb-2">{children}</h3>
+    ),
+
+    p: ({ children }) => (
+      <p className="mb-3 leading-7">{children}</p>
+    ),
+
+    strong: ({ children }) => (
+      <strong className="font-bold text-white">{children}</strong>
+    ),
+
+    ul: ({ children }) => (
+      <ul className="list-disc pl-6 mb-4 space-y-2">{children}</ul>
+    ),
+
+    ol: ({ children }) => (
+      <ol className="list-decimal pl-6 mb-4 space-y-2">{children}</ol>
+    ),
+
+    li: ({ children }) => (
+      <li className="pl-1">{children}</li>
+    ),
+
+    a: ({ href, children }) => {
+      const safeUrl = (() => {
+        try {
+          const parsed = new URL(href);
+          return ["http:", "https:"].includes(parsed.protocol)
+            ? parsed.href
+            : null;
+        } catch {
+          return null;
+        }
+      })();
+
+      if (!safeUrl) {
+        return <span>{children}</span>;
+      }
+
+      return (
+        <a
+          href={safeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:underline break-words"
+        >
+          {children}
+        </a>
+      );
+    },
+
+    code: ({ children, className }) => {
+      const isBlock = Boolean(className);
+
+      return isBlock ? (
+        <code className="block bg-slate-950 text-green-300 p-3 rounded-lg overflow-x-auto text-sm my-3">
+          {children}
+        </code>
+      ) : (
+        <code className="bg-slate-950 text-green-300 px-2 py-1 rounded text-sm">
+          {children}
+        </code>
+      );
+    },
+
+    blockquote: ({ children }) => (
+      <blockquote className="border-l-4 border-blue-500 pl-4 my-4 text-slate-400">
+        {children}
+      </blockquote>
+    ),
   };
 
   return (
@@ -216,9 +353,68 @@ function Repositories() {
                   ✨ AI README Analysis
                 </h2>
 
-                <div className="whitespace-pre-wrap text-slate-300 leading-7">
-                  {analysis}
+                <div className="text-slate-300 leading-7">
+                  <ReactMarkdown components={markdownComponents}>
+                    {formatMarkdown(analysis)}
+                  </ReactMarkdown>
                 </div>
+
+              </div>
+            )}
+
+            {/* RAG Chatbot */}
+            {readme && (
+              <div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
+
+                <h2 className="text-2xl font-bold mb-4">
+                  💬 Ask Questions About This Repository
+                </h2>
+
+                <p className="text-slate-400 mb-4">
+                  Ask anything about this repository. AI will search its README
+                  and provide a beginner-friendly answer.
+                </p>
+
+                <div className="flex gap-3">
+
+                  <input
+                    type="text"
+                    placeholder="e.g. How do I install this project?"
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !asking) {
+                        askRepositoryQuestion();
+                      }
+                    }}
+                    className="flex-1 px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 outline-none"
+                  />
+
+                  <button
+                    onClick={askRepositoryQuestion}
+                    disabled={asking}
+                    className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {asking ? "Thinking..." : "Ask AI"}
+                  </button>
+
+                </div>
+
+                {answer && (
+                  <div className="mt-6 p-5 rounded-lg bg-slate-800 border border-slate-700">
+
+                    <h3 className="text-lg font-bold mb-4">
+                      ✨ AI Answer
+                    </h3>
+
+                    <div className="text-slate-300 leading-7">
+                      <ReactMarkdown components={markdownComponents}>
+                        {formatMarkdown(answer)}
+                      </ReactMarkdown>
+                    </div>
+
+                  </div>
+                )}
 
               </div>
             )}

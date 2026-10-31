@@ -6,6 +6,7 @@ dotenv.config();
 
 const githubRoutes = require("./routes/githubRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const questionRoutes = require("./routes/questionRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,9 @@ app.use("/api/github", githubRoutes);
 
 // AI / Gemini routes
 app.use("/api/ai", aiRoutes);
+
+// RAG-powered repository question routes
+app.use("/api/questions", questionRoutes);
 
 // Start server
 app.listen(PORT, () => {
