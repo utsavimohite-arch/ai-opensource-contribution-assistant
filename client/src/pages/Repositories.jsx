@@ -20,6 +20,9 @@ function Repositories() {
   const [answer, setAnswer] = useState("");
   const [asking, setAsking] = useState(false);
 
+  // MongoDB chat history state
+  const [chatHistory, setChatHistory] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,6 +33,22 @@ function Repositories() {
     return content
       .replace(/\\([\\`*_{}\[\]()#+.!>~-])/g, "$1")
       .replace(/\r\n/g, "\n");
+  };
+
+  // Fetch previous conversations from MongoDB
+  const fetchChatHistory = async (repositoryOwner, repositoryName) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/questions/history/${encodeURIComponent(
+          repositoryOwner
+        )}/${encodeURIComponent(repositoryName)}`
+      );
+
+      setChatHistory(response.data.history || []);
+    } catch (error) {
+      console.error("Failed to fetch chat history:", error);
+      setChatHistory([]);
+    }
   };
 
   // Fetch GitHub repository information
@@ -50,6 +69,7 @@ function Repositories() {
       setAnalysis("");
       setQuestion("");
       setAnswer("");
+      setChatHistory([]);
 
       const baseUrl = `http://localhost:5000/api/github/repository/${encodeURIComponent(
         owner.trim()
@@ -75,6 +95,10 @@ function Repositories() {
       setBeginnerIssues(
         beginnerIssuesResponse.data.issues || []
       );
+
+      // Load previous conversations for this repository
+      await fetchChatHistory(owner.trim(), repo.trim());
+
     } catch (error) {
       console.error(error);
       setError(
@@ -135,10 +159,16 @@ function Repositories() {
         {
           readme: readme.content,
           question: question.trim(),
+          owner: owner.trim(),
+          repo: repo.trim(),
         }
       );
 
       setAnswer(response.data.answer);
+
+      // Refresh history after the new conversation is saved
+      await fetchChatHistory(owner.trim(), repo.trim());
+
     } catch (error) {
       console.error(error);
       setError("Failed to get an answer. Please try again.");
@@ -425,6 +455,45 @@ function Repositories() {
 
                 </div>
 
+                {/* Previous Chat History */}
+                {chatHistory.length > 0 && (
+                  <div className="mt-6">
+
+                    <h3 className="text-lg font-bold mb-4">
+                      Previous Conversations
+                    </h3>
+
+                    <div className="space-y-4">
+
+                      {[...chatHistory].reverse().map((chat) => (
+                        <div
+                          key={chat._id}
+                          className="p-4 rounded-lg bg-slate-800 border border-slate-700"
+                        >
+
+                          <p className="font-semibold text-blue-400 mb-2">
+                            You: {chat.question}
+                          </p>
+
+                          <div className="text-slate-300 leading-7">
+                            <ReactMarkdown components={markdownComponents}>
+                              {formatMarkdown(chat.answer)}
+                            </ReactMarkdown>
+                          </div>
+
+                          <p className="text-xs text-slate-500 mt-3">
+                            {new Date(chat.createdAt).toLocaleString()}
+                          </p>
+
+                        </div>
+                      ))}
+
+                    </div>
+
+                  </div>
+                )}
+
+                {/* Latest AI Answer */}
                 {answer && (
                   <div className="mt-6 p-5 rounded-lg bg-slate-800 border border-slate-700">
 
