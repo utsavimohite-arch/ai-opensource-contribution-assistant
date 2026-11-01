@@ -1,3 +1,4 @@
+
 const express = require("express");
 
 const {
@@ -5,6 +6,10 @@ const {
   getReadme,
   getIssues,
 } = require("../services/githubService");
+
+const {
+  recommendBeginnerIssues,
+} = require("../services/issueRecommendationService");
 
 const router = express.Router();
 
@@ -44,7 +49,10 @@ router.get("/repository/:owner/:repo/readme", async (req, res) => {
 
     const readme = await getReadme(owner, repo);
 
-    const content = Buffer.from(readme.content, "base64").toString("utf-8");
+    const content = Buffer.from(
+      readme.content,
+      "base64"
+    ).toString("utf-8");
 
     res.json({
       success: true,
@@ -71,12 +79,10 @@ router.get("/repository/:owner/:repo/issues", async (req, res) => {
 
     const issues = await getIssues(owner, repo);
 
-    const filteredIssues = issues.filter((issue) => !issue.pull_request);
-
     res.json({
       success: true,
-      count: filteredIssues.length,
-      issues: filteredIssues.map((issue) => ({
+      count: issues.length,
+      issues: issues.map((issue) => ({
         number: issue.number,
         title: issue.title,
         body: issue.body,
@@ -97,5 +103,45 @@ router.get("/repository/:owner/:repo/issues", async (req, res) => {
     });
   }
 });
+
+// Get beginner-friendly repository issues
+router.get(
+  "/repository/:owner/:repo/beginner-issues",
+  async (req, res) => {
+    try {
+      const { owner, repo } = req.params;
+
+      // Fetch actual open issues from GitHub
+      const issues = await getIssues(owner, repo);
+
+      // Calculate scores and rank beginner-friendly issues
+      const recommendedIssues = recommendBeginnerIssues(issues);
+
+      res.json({
+        success: true,
+        count: recommendedIssues.length,
+        issues: recommendedIssues.map((issue) => ({
+          number: issue.number,
+          title: issue.title,
+          body: issue.body,
+          state: issue.state,
+          labels: issue.labels.map((label) =>
+            typeof label === "string" ? label : label.name
+          ),
+          comments: issue.comments,
+          url: issue.html_url,
+          beginnerScore: issue.beginnerScore,
+        })),
+      });
+    } catch (error) {
+      console.error("Beginner Issues Error:", error);
+
+      res.status(500).json({
+        success: false,
+        message: "Failed to recommend beginner-friendly issues",
+      });
+    }
+  }
+);
 
 module.exports = router;

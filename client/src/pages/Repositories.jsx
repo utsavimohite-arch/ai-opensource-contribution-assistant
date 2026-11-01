@@ -10,6 +10,7 @@ function Repositories() {
   const [repository, setRepository] = useState(null);
   const [readme, setReadme] = useState(null);
   const [issues, setIssues] = useState([]);
+  const [beginnerIssues, setBeginnerIssues] = useState([]);
 
   const [analysis, setAnalysis] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
@@ -41,28 +42,39 @@ function Repositories() {
     try {
       setLoading(true);
       setError("");
+
       setRepository(null);
       setReadme(null);
       setIssues([]);
+      setBeginnerIssues([]);
       setAnalysis("");
       setQuestion("");
       setAnswer("");
 
-      const repositoryResponse = await axios.get(
-        `http://localhost:5000/api/github/repository/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}`
-      );
+      const baseUrl = `http://localhost:5000/api/github/repository/${encodeURIComponent(
+        owner.trim()
+      )}/${encodeURIComponent(repo.trim())}`;
+
+      const repositoryResponse = await axios.get(baseUrl);
 
       const readmeResponse = await axios.get(
-        `http://localhost:5000/api/github/repository/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/readme`
+        `${baseUrl}/readme`
       );
 
       const issuesResponse = await axios.get(
-        `http://localhost:5000/api/github/repository/${encodeURIComponent(owner.trim())}/${encodeURIComponent(repo.trim())}/issues`
+        `${baseUrl}/issues`
+      );
+
+      const beginnerIssuesResponse = await axios.get(
+        `${baseUrl}/beginner-issues`
       );
 
       setRepository(repositoryResponse.data.repository);
       setReadme(readmeResponse.data.readme);
-      setIssues(issuesResponse.data.issues);
+      setIssues(issuesResponse.data.issues || []);
+      setBeginnerIssues(
+        beginnerIssuesResponse.data.issues || []
+      );
     } catch (error) {
       console.error(error);
       setError(
@@ -138,15 +150,21 @@ function Repositories() {
   // Markdown components used to display AI answers
   const markdownComponents = {
     h1: ({ children }) => (
-      <h1 className="text-2xl font-bold mt-5 mb-3">{children}</h1>
+      <h1 className="text-2xl font-bold mt-5 mb-3">
+        {children}
+      </h1>
     ),
 
     h2: ({ children }) => (
-      <h2 className="text-xl font-bold mt-5 mb-3">{children}</h2>
+      <h2 className="text-xl font-bold mt-5 mb-3">
+        {children}
+      </h2>
     ),
 
     h3: ({ children }) => (
-      <h3 className="text-lg font-bold mt-4 mb-2">{children}</h3>
+      <h3 className="text-lg font-bold mt-4 mb-2">
+        {children}
+      </h3>
     ),
 
     p: ({ children }) => (
@@ -154,15 +172,21 @@ function Repositories() {
     ),
 
     strong: ({ children }) => (
-      <strong className="font-bold text-white">{children}</strong>
+      <strong className="font-bold text-white">
+        {children}
+      </strong>
     ),
 
     ul: ({ children }) => (
-      <ul className="list-disc pl-6 mb-4 space-y-2">{children}</ul>
+      <ul className="list-disc pl-6 mb-4 space-y-2">
+        {children}
+      </ul>
     ),
 
     ol: ({ children }) => (
-      <ol className="list-decimal pl-6 mb-4 space-y-2">{children}</ol>
+      <ol className="list-decimal pl-6 mb-4 space-y-2">
+        {children}
+      </ol>
     ),
 
     li: ({ children }) => (
@@ -173,6 +197,7 @@ function Repositories() {
       const safeUrl = (() => {
         try {
           const parsed = new URL(href);
+
           return ["http:", "https:"].includes(parsed.protocol)
             ? parsed.href
             : null;
@@ -419,7 +444,90 @@ function Repositories() {
               </div>
             )}
 
-            {/* Issues */}
+            {/* Beginner-Friendly Issues */}
+            <div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
+
+              <h2 className="text-2xl font-bold mb-4">
+                🌱 Beginner-Friendly Issues
+              </h2>
+
+              <p className="text-slate-400 mb-6">
+                These issues are ranked using our beginner-friendly
+                recommendation algorithm.
+              </p>
+
+              <p className="text-slate-400 mb-6">
+                {beginnerIssues.length} beginner-friendly recommendations found
+              </p>
+
+              <div className="space-y-4">
+
+                {beginnerIssues.length > 0 ? (
+                  beginnerIssues.map((issue) => (
+                    <div
+                      key={issue.number}
+                      className="p-4 bg-slate-800 rounded-lg"
+                    >
+
+                      <div className="flex flex-wrap justify-between gap-3">
+
+                        <a
+                          href={issue.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-lg font-semibold text-blue-400 hover:underline"
+                        >
+                          #{issue.number} {issue.title}
+                        </a>
+
+                        <span className="px-3 py-1 text-sm rounded-lg bg-green-900 text-green-300">
+                          Beginner Score: {issue.beginnerScore}
+                        </span>
+
+                      </div>
+
+                      <p className="text-sm text-slate-400 mt-3">
+                        {issue.body
+                          ? issue.body.slice(0, 250) +
+                            (issue.body.length > 250 ? "..." : "")
+                          : "No issue description available."}
+                      </p>
+
+                      <div className="flex flex-wrap gap-2 mt-3">
+
+                        {(issue.labels || []).map((label) => (
+                          <span
+                            key={label}
+                            className="px-2 py-1 text-xs rounded bg-slate-700 text-slate-300"
+                          >
+                            {label}
+                          </span>
+                        ))}
+
+                      </div>
+
+                      <a
+                        href={issue.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-block mt-4 text-sm text-blue-400 hover:underline"
+                      >
+                        View Issue on GitHub →
+                      </a>
+
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-slate-400">
+                    No beginner-friendly issues were found for this repository.
+                  </p>
+                )}
+
+              </div>
+
+            </div>
+
+            {/* Open Issues */}
             <div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
 
               <h2 className="text-2xl font-bold mb-4">
@@ -449,7 +557,7 @@ function Repositories() {
 
                     <div className="flex flex-wrap gap-2 mt-3">
 
-                      {issue.labels.map((label) => (
+                      {(issue.labels || []).map((label) => (
                         <span
                           key={label}
                           className="px-2 py-1 text-xs rounded bg-slate-700 text-slate-300"
