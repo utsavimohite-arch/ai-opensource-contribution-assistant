@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home";
 import Repositories from "./pages/Repositories";
@@ -9,13 +9,23 @@ import Chat from "./pages/Chat";
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/repositories" element={<Repositories />} />
-        <Route path="/repository/:owner/:repo" element={<RepositoryAnalysis />} />
-        <Route path="/issues" element={<Issues />} />
-        <Route path="/chat" element={<Chat />} />
-      </Routes>
+      
+        <Routes>
+  <Route path="/" element={<Navigate to="/repositories" replace />} />
+
+  <Route path="/home" element={<Home />} />
+
+  <Route path="/repositories" element={<Repositories />} />
+
+  <Route
+    path="/repository/:owner/:repo"
+    element={<RepositoryAnalysis />}
+  />
+
+  <Route path="/issues" element={<Issues />} />
+
+  <Route path="/chat" element={<Chat />} />
+</Routes>
     </BrowserRouter>
   );
 }
