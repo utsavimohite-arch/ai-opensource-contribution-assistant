@@ -7,6 +7,9 @@ function Repositories() {
   const [owner, setOwner] = useState("");
   const [repo, setRepo] = useState("");
 
+  // Contribution workflow state
+const [githubUsername, setGithubUsername] = useState("");
+
   const [repository, setRepository] = useState(null);
   const [readme, setReadme] = useState(null);
   const [issues, setIssues] = useState([]);
@@ -25,7 +28,59 @@ function Repositories() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+// Contribution workflow instructions
+const workflowSteps = [
+  {
+    title: "1. Fork the Repository",
+    description:
+      "Open the original repository on GitHub and click the Fork button. This creates your own copy of the project.",
+    link: `https://github.com/${owner}/${repo}`,
+    linkText: "Open Original Repository",
+  },
+  {
+    title: "2. Clone the Repository",
+    description:
+      "Download your forked repository to your computer using Git.",
+    command: `git clone https://github.com/${githubUsername}/${repo}.git
+cd ${repo}`,
+  },
+  {
+    title: "3. Create a New Branch",
+    description:
+      "Create a separate branch to work on your changes.",
+    command: "git checkout -b my-new-feature",
+  },
+  {
+    title: "4. Commit Your Changes",
+    description:
+      "Stage your changes and save them with a meaningful commit message.",
+    command: 'git add .\ngit commit -m "Describe your changes"',
+  },
+  {
+    title: "5. Push Your Branch",
+    description:
+      "Upload your branch to your GitHub fork.",
+    command: "git push -u origin my-new-feature",
+  },
+  {
+    title: "6. Create a Pull Request",
+    description:
+      "Open your fork on GitHub, select your branch, and click Compare & pull request.",
+    link: `https://github.com/${githubUsername}/${repo}/compare`,
+    linkText: "Open Your GitHub Repository",
+  },
+];
 
+// Copy a Git command to the clipboard
+const copyCommand = async (command) => {
+  try {
+    await navigator.clipboard.writeText(command);
+    alert("Command copied successfully!");
+  } catch (error) {
+    console.error("Could not copy command:", error);
+    alert("Unable to copy. Please copy the command manually.");
+  }
+};
   // Clean escaped Markdown characters from AI responses
   const formatMarkdown = (content) => {
     if (!content) return "";
@@ -512,7 +567,74 @@ function Repositories() {
 
               </div>
             )}
+{/* Contribution Workflow */}
+<div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
 
+  <h2 className="text-2xl font-bold mb-4">
+    🚀 Open Source Contribution Workflow
+  </h2>
+
+  <p className="text-slate-400 mb-4">
+    Learn how to contribute to this repository step by step.
+  </p>
+
+  <label className="block text-sm text-slate-300 mb-2">
+    Enter your GitHub username
+  </label>
+
+  <input
+    type="text"
+    placeholder="e.g. your-github-username"
+    value={githubUsername}
+    onChange={(e) => setGithubUsername(e.target.value)}
+    className="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 outline-none"
+  />
+{/* Display contribution workflow steps */}
+{githubUsername.trim() && (
+  <div className="mt-6 space-y-5">
+    {workflowSteps.map((step, index) => (
+      <div
+        key={index}
+        className="p-4 rounded-lg bg-slate-800 border border-slate-700"
+      >
+        <h3 className="text-lg font-semibold mb-2">
+          {step.title}
+        </h3>
+
+        <p className="text-slate-400 mb-3">
+          {step.description}
+        </p>
+
+        {step.command && (
+          <div className="mt-3">
+            <pre className="bg-slate-950 p-3 rounded-lg overflow-x-auto text-sm text-green-400 whitespace-pre-wrap">
+              {step.command}
+            </pre>
+
+            <button
+              onClick={() => copyCommand(step.command)}
+              className="mt-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm"
+            >
+              Copy Command
+            </button>
+          </div>
+        )}
+
+        {step.link && (
+          <a
+            href={step.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-2 text-blue-400 hover:underline"
+          >
+            {step.linkText} →
+          </a>
+        )}
+      </div>
+    ))}
+  </div>
+)}
+</div>
             {/* Beginner-Friendly Issues */}
             <div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
 
