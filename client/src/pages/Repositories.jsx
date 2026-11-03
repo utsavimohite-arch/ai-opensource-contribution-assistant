@@ -94,7 +94,7 @@ const copyCommand = async (command) => {
   const fetchChatHistory = async (repositoryOwner, repositoryName) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/questions/history/${encodeURIComponent(
+        `https://ai-opensource-contribution-assistant-1.onrender.com/api/questions/history/${encodeURIComponent(
           repositoryOwner
         )}/${encodeURIComponent(repositoryName)}`
       );
@@ -126,7 +126,7 @@ const copyCommand = async (command) => {
       setAnswer("");
       setChatHistory([]);
 
-      const baseUrl = `http://localhost:5000/api/github/repository/${encodeURIComponent(
+      const baseUrl = `https://ai-opensource-contribution-assistant-1.onrender.com/api/github/repository/${encodeURIComponent(
         owner.trim()
       )}/${encodeURIComponent(repo.trim())}`;
 
@@ -177,7 +177,7 @@ const copyCommand = async (command) => {
       setAnalysis("");
 
       const response = await axios.post(
-        "http://localhost:5000/api/ai/analyze-readme",
+        "https://ai-opensource-contribution-assistant-1.onrender.com/api/ai/analyze-readme",
         {
           readme: readme.content,
         }
@@ -210,7 +210,7 @@ const copyCommand = async (command) => {
       setAnswer("");
 
       const response = await axios.post(
-        "http://localhost:5000/api/questions/ask",
+        "https://ai-opensource-contribution-assistant-1.onrender.com/api/questions/ask",
         {
           readme: readme.content,
           question: question.trim(),
