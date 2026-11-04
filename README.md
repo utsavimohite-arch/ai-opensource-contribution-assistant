@@ -11,8 +11,6 @@ Intelligence and Retrieval-Augmented Generation (RAG).
 **GitHub Repository:**
 https://github.com/utsavimohite-arch/ai-opensource-contribution-assistant
 
-> Replace `PASTE_YOUR_VERCEL_URL_HERE` with your actual Vercel URL
-> before publishing.
 
 ------------------------------------------------------------------------
 
