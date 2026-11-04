@@ -6,7 +6,7 @@ Intelligence and Retrieval-Augmented Generation (RAG).
 
 ## 🌐 Live Demo
 
-**Live Application:** [Try the application](PASTE_YOUR_VERCEL_URL_HERE)
+**Live Application:** [Try the application](https://ai-opensource-contribution-assistan.vercel.app/repositories)
 
 **GitHub Repository:**
 https://github.com/utsavimohite-arch/ai-opensource-contribution-assistant
