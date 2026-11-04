@@ -28,13 +28,13 @@ Generation (RAG) and the GitHub API to:
 - [x] Frontend React app running
 - [x] GitHub API connected (fetch repo info)
 - [x] README/NLP analysis module (via LLM API)
-- [ ] RAG / retrieval module
-- [ ] Beginner-issue recommendation logic
-- [ ] Chatbot UI
-- [ ] Chatbot backend logic
-- [ ] Contribution-workflow guidance feature
-- [ ] Testing
-- [ ] Deployment
+- [x] RAG / retrieval module
+- [x] Beginner-issue recommendation logic
+- [x] Chatbot UI
+- [x] Chatbot backend logic
+- [x] Contribution-workflow guidance feature
+- [x] Testing
+- [x] Deployment
 
 _Last updated: 25 Sept 2026_
 
