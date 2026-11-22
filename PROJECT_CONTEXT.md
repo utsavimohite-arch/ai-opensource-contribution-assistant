@@ -36,17 +36,7 @@ Generation (RAG) and the GitHub API to:
 - [x] Testing
 - [x] Deployment
 
-_Last updated: 25 Sept 2026_
-
-
-
-
-
-
-## 7. Known Issues / Blockers
-- (none yet)
-
-## 8. File/Folder Map (update as it grows)
+## 4. File/Folder Map (update as it grows)
 ```
 project-root/
 ├── client/        # React frontend
