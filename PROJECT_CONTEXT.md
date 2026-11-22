@@ -40,25 +40,8 @@ _Last updated: 25 Sept 2026_
 
 
 
-## 5. What's Next (pick up here in the new chat)
-- Milestone 2: Backend Express server running — run `npm init -y` and
-  `npm install express dotenv cors` inside `server/`, then create a basic `index.js`
-- Milestone 3: Frontend React app running (Vite)
-- Milestone 4: GitHub API connected (fetch repo info, README, issues)
-- Milestone 5: README/NLP analysis module using LLM API
-- **Checkpoint deadline: Milestones 1-5 done by Sept 29, 2026**
-- After Sept 29: continue with Milestone 6 (RAG), 7 (recommendation logic), and onward
 
-## 6. Key Decisions & Notes
-- Milestone 5 (README/NLP analysis) will use a pretrained LLM API (GPT/Gemini/Claude)
-  for summarization instead of a custom-trained NLP model. This follows the RAG
-  approach cited in the synopsis's Related Work — RAG is built on pretrained models +
-  retrieval, not models trained from scratch.
-- Target: Complete Milestones 1-5 by Sept 29th as a first checkpoint. Milestones 6-11
-  (RAG retrieval, recommendation logic, chatbot, workflow guidance, testing,
-  deployment) to follow after.
-- Working in PowerShell on Windows — use `mkdir folder1, folder2` (comma-separated)
-  instead of Unix-style `mkdir folder1 folder2`.
+
 
 ## 7. Known Issues / Blockers
 - (none yet)
