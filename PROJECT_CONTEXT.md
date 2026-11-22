@@ -38,10 +38,7 @@ Generation (RAG) and the GitHub API to:
 
 _Last updated: 25 Sept 2026_
 
-## 4. What Was Just Done (most recent session)
-- Created GitHub repo `ai-opensource-contribution-assistant`
-- Cloned locally, created `client/` and `server/` folders
-- Created this PROJECT_CONTEXT.md file
+
 
 ## 5. What's Next (pick up here in the new chat)
 - Milestone 2: Backend Express server running — run `npm init -y` and
